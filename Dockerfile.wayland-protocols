@@ -1,0 +1,30 @@
+FROM wayland-build:0.1
+ARG HOME_DIR=/home/ubuntu
+
+ARG WAYLAND_PROTOCOLS_VERSION=1.45
+
+RUN <<EOF
+    # install wayland's deps
+    sudo apt-get update
+    sudo apt-get build-dep -y wayland
+    sudo apt-get build-dep wayland-protocols
+    sudo apt-get remove libwayland-dev
+    sudo apt-get autoremove
+EOF
+
+WORKDIR ${HOME_DIR}
+
+RUN <<EOF
+    wget https://gitlab.freedesktop.org/wayland/wayland-protocols/-/releases/${WAYLAND_PROTOCOLS_VERSION}/downloads/wayland-protocols-${WAYLAND_PROTOCOLS_VERSION}.tar.xz
+    tar -xvf wayland-protocols-${WAYLAND_PROTOCOLS_VERSION}.tar.xz
+EOF
+
+WORKDIR ${HOME_DIR}/wayland-protocols-${WAYLAND_PROTOCOLS_VERSION}
+
+RUN <<EOF
+    meson setup build/ --prefix=/usr/local
+    ninja -C build/
+EOF
+
+
+CMD sudo ninja -C build/ install

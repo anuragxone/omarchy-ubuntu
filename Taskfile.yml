@@ -13,4 +13,10 @@ tasks:
       - docker build -t wayland-build:0.1 -f Dockerfile.wayland .
       - docker run --mount type=bind,src=/usr/local,dst=/usr/local wayland-build:0.1
   
+  wayland-protocols:
+    deps: [wayland]
+    cmds:
+      - docker build -t wayland-protocols-build:0.1 -f Dockerfile.wayland-protocols .
+      - docker run --mount type=bind,src=/usr/local,dst=/usr/local wayland-protocols-build:0.1
+  
   
