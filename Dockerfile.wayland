@@ -1,0 +1,23 @@
+FROM ubuntu-non_root:noble
+
+ARG WAYLAND_VERSION=1.24.0
+
+RUN <<EOF
+    # install wayland's deps
+    sudo apt-get update
+    sudo apt-get build-dep -y wayland
+EOF
+
+RUN <<EOF
+    wget https://gitlab.freedesktop.org/wayland/wayland/-/releases/${WAYLAND_VERSION}/downloads/wayland-${WAYLAND_VERSION}.tar.xz
+    tar -xvf wayland-${WAYLAND_VERSION}.tar.xz
+EOF
+
+WORKDIR $HOME/wayland-${WAYLAND_VERSION}
+
+RUN <<EOF
+    meson setup build/ --prefix=/usr/local
+    ninja -C build/
+EOF
+
+CMD sudo ninja -C build/ install

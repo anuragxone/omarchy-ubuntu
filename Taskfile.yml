@@ -1,0 +1,16 @@
+# https://taskfile.dev
+
+version: '3'
+
+tasks:
+
+  build-docker-ubuntu-non-root-image:
+    cmd: docker build -t ubuntu-non_root:noble -f Dockerfile.ubuntu-non_root .
+  
+  wayland:
+    deps: [build-docker-ubuntu-non-root-image]
+    cmds:
+      - docker build -t build-wayland:v1 -f Dockerfile.wayland .
+      - docker run --mount type=bind,src=/usr/local,dst=/usr/local
+  
+  
