@@ -10,7 +10,7 @@ tasks:
   wayland:
     deps: [build-docker-ubuntu-non-root-image]
     cmds:
-      - docker build -t build-wayland:v1 -f Dockerfile.wayland .
-      - docker run --mount type=bind,src=/usr/local,dst=/usr/local
+      - docker build -t wayland-build:0.1 -f Dockerfile.wayland .
+      - docker run --mount type=bind,src=/usr/local,dst=/usr/local wayland-build:0.1
   
   

@@ -1,4 +1,5 @@
 FROM ubuntu-non_root:noble
+ARG HOME_DIR=/home/ubuntu
 
 ARG WAYLAND_VERSION=1.24.0
 
@@ -13,11 +14,12 @@ RUN <<EOF
     tar -xvf wayland-${WAYLAND_VERSION}.tar.xz
 EOF
 
-WORKDIR $HOME/wayland-${WAYLAND_VERSION}
+WORKDIR ${HOME_DIR}/wayland-${WAYLAND_VERSION}
 
 RUN <<EOF
     meson setup build/ --prefix=/usr/local
     ninja -C build/
 EOF
+
 
 CMD sudo ninja -C build/ install
