@@ -30,7 +30,13 @@ tasks:
     cmds:
       - docker build -t libinput-build:0.1 -f Dockerfile.libinput .
       - docker run --mount type=bind,src=/usr/local,dst=/usr/local libinput-build:0.1
+  
+  libxcb-errors:
+    deps: [build-docker-ubuntu-non-root-image]
+    cmds:
+      - docker build -t libxcb-errors-build:0.1 -f Dockerfile.libxcb-errors .
+      - docker run --mount type=bind,src=/usr/local,dst=/usr/local libxcb-errors-build:0.1
 
 
   build-all:
-    deps: [build-docker-ubuntu-non-root-image,wayland,wayland-protocols,libdisplay-info]
+    deps: [build-docker-ubuntu-non-root-image,wayland,wayland-protocols,libdisplay-info,libinput,libxcb-errors]

@@ -1,0 +1,26 @@
+FROM ubuntu-non_root:noble
+ARG HOME_DIR=/home/ubuntu
+
+ARG LIBXCB_ERRORS_VERSION=1.0.1
+
+RUN <<EOF
+    # install libxcb-errors's deps
+    sudo apt-get update
+    sudo apt-get install -y git xcb-proto xutils-dev automake autoconf libtool pkgconf libxcb1-dev python3
+EOF
+
+RUN <<EOF
+    git clone https://gitlab.freedesktop.org/xorg/lib/libxcb-errors -b xcb-util-errors-${LIBXCB_ERRORS_VERSION} --recursive
+    cd libxcb-errors && rm -rf m4
+    git clone https://gitlab.freedesktop.org/xorg/util/xcb-util-m4 m4
+EOF
+
+WORKDIR ${HOME_DIR}/libxcb-errors
+
+RUN <<EOF
+    ./autogen.sh
+    ./configure --prefix=/usr/local
+    make
+EOF
+
+CMD sudo make install
