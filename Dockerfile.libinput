@@ -1,0 +1,24 @@
+FROM ubuntu-non_root:noble
+ARG HOME_DIR=/home/ubuntu
+
+ARG LIBINPUT_VERSION=1.29.901
+
+RUN <<EOF
+    # install libdisplay-info's deps
+    sudo apt-get update
+    sudo apt-get build-dep -y libinput
+EOF
+
+RUN <<EOF
+    wget https://gitlab.freedesktop.org/libinput/libinput/-/archive/{LIBINPUT_VERSION}/libinput-{LIBINPUT_VERSION}.tar.gz
+    tar -xvzf libinput-${LIBINPUT_VERSION}.tar.gz
+EOF
+
+WORKDIR ${HOME_DIR}/libinput-${LIBINPUT_VERSION}
+
+RUN <<EOF
+    meson setup build/ --prefix=/usr/local
+    ninja -C build/
+EOF
+
+CMD sudo ninja -C build/ install

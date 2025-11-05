@@ -20,9 +20,17 @@ tasks:
       - docker run --mount type=bind,src=/usr/local,dst=/usr/local wayland-protocols-build:0.1
   
   libdisplay-info:
+    deps: [build-docker-ubuntu-non-root-image]
     cmds:
       - docker build -t libdisplay-info-build:0.1 -f Dockerfile.libdisplay-info .
       - docker run --mount type=bind,src=/usr/local,dst=/usr/local libdisplay-info-build:0.1
+  
+  libinput:
+    deps: [build-docker-ubuntu-non-root-image]
+    cmds:
+      - docker build -t libinput-build:0.1 -f Dockerfile.libinput .
+      - docker run --mount type=bind,src=/usr/local,dst=/usr/local libinput-build:0.1
+
 
   build-all:
-    deps: [build-docker-ubuntu-non-root-image,wayland,wayland-protocols]
+    deps: [build-docker-ubuntu-non-root-image,wayland,wayland-protocols,libdisplay-info]

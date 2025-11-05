@@ -4,7 +4,7 @@ ARG HOME_DIR=/home/ubuntu
 ARG LIBDISPLAY_INFO_VERSION=0.3.0
 
 RUN <<EOF
-    # install wayland's deps
+    # install libdisplay-info's deps
     sudo apt-get update
     sudo apt-get build-dep -y libdisplay-info
 EOF
