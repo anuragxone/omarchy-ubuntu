@@ -42,6 +42,12 @@ tasks:
     cmds:
       - docker build -t gcc-build:0.1 -f Dockerfile.gcc .
       - docker run --mount type=bind,src=/usr/local,dst=/usr/local gcc-build:0.1
+  
+  qt6:
+    deps: [build-docker-ubuntu-non-root-image]
+    cmds:
+      - docker build -t qt-build:0.1 -f Dockerfile.qt6 .
+      - docker run --mount type=bind,src=/usr/local,dst=/usr/local qt-build:0.1
 
   build-all:
     deps: [build-docker-ubuntu-non-root-image,wayland,wayland-protocols,libdisplay-info,libinput,libxcb-errors,gcc]
