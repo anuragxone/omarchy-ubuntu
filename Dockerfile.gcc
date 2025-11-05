@@ -1,0 +1,25 @@
+FROM ubuntu-non_root:noble
+ARG HOME_DIR=/home/ubuntu
+
+ARG GCC_VERSION=15.2.0
+
+RUN <<EOF
+    # install libinput's deps
+    sudo apt-get update
+    sudo apt-get build-dep -y gcc-14
+EOF
+
+RUN <<EOF
+    # using gcc official mirror to fetch source code for gcc 15
+    wget https://ftp.gwdg.de/pub/misc/gcc/releases/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.xz
+    tar -xvf gcc-${GCC_VERSION}.tar.xz
+EOF
+
+WORKDIR ${HOME_DIR}/gcc-${GCC_VERSION}
+
+RUN <<EOF
+    ./configure --prefix=/usr/local --disable-bootstrap --disable-multilib --enable-languages=c,c++
+    make -j$(nproc)
+EOF
+
+CMD sudo make install
