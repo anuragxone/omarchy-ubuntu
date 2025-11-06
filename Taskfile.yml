@@ -1,36 +1,41 @@
 # https://taskfile.dev
 
-version: '3'
+version: "3"
+
+vars:
+  CMAKE_VERSION: "4.1.2"
+  CMAKE: "$HOME/.local/cmake-{{.CMAKE_VERSION}}-linux-x86_64/bin/cmake"
 
 tasks:
-
   build-docker-ubuntu-non-root-image:
+    status:
+      - docker image inspect ubuntu-non_root:noble > /dev/null 2>&1
     cmd: docker build -t ubuntu-non_root:noble -f Dockerfile.ubuntu-non_root .
-  
+
   wayland:
     deps: [build-docker-ubuntu-non-root-image]
     cmds:
       - docker build -t wayland-build:0.1 -f Dockerfile.wayland .
       - docker run --mount type=bind,src=/usr/local,dst=/usr/local wayland-build:0.1
-  
+
   wayland-protocols:
     deps: [wayland]
     cmds:
       - docker build -t wayland-protocols-build:0.1 -f Dockerfile.wayland-protocols .
       - docker run --mount type=bind,src=/usr/local,dst=/usr/local wayland-protocols-build:0.1
-  
+
   libdisplay-info:
     deps: [build-docker-ubuntu-non-root-image]
     cmds:
       - docker build -t libdisplay-info-build:0.1 -f Dockerfile.libdisplay-info .
       - docker run --mount type=bind,src=/usr/local,dst=/usr/local libdisplay-info-build:0.1
-  
+
   libinput:
     deps: [build-docker-ubuntu-non-root-image]
     cmds:
       - docker build -t libinput-build:0.1 -f Dockerfile.libinput .
       - docker run --mount type=bind,src=/usr/local,dst=/usr/local libinput-build:0.1
-  
+
   libxcb-errors:
     deps: [build-docker-ubuntu-non-root-image]
     cmds:
@@ -42,12 +47,31 @@ tasks:
     cmds:
       - docker build -t gcc-build:0.1 -f Dockerfile.gcc .
       - docker run --mount type=bind,src=/usr/local,dst=/usr/local gcc-build:0.1
-  
+    status:
+      - test -f /usr/local/bin/gcc
+      - test -f /usr/local/bin/g++
+
   qt6:
     deps: [build-docker-ubuntu-non-root-image]
     cmds:
       - docker build -t qt-build:0.1 -f Dockerfile.qt6 .
       - docker run --mount type=bind,src=/usr/local,dst=/usr/local qt-build:0.1
+    status:
+      - test -f /usr/local/lib/libQt6Core.so
 
-  build-all:
-    deps: [build-docker-ubuntu-non-root-image,wayland,wayland-protocols,libdisplay-info,libinput,libxcb-errors,gcc]
+  cmake-latest:
+    dir: "$HOME/.local"
+    cmds:
+      - sudo apt-get update -y
+      - sudo apt-get install -y wget tar gzip
+      - mkdir -p "{{.HOME}}/.local"
+      - wget "https://github.com/Kitware/CMake/releases/download/v{{.CMAKE_VERSION}}/cmake-{{.CMAKE_VERSION}}-linux-x86_64.tar.gz"
+      - tar -xvzf "cmake-{{.CMAKE_VERSION}}-linux-x86_64.tar.gz"
+    status:
+      - test -f cmake-{{.CMAKE_VERSION}}-linux-x86_64/bin/cmake
+
+  hyprwayland-scanner:
+    deps: [gcc, cmake-latest]
+    cmds:
+      - sudo apt-get install -y git build-essential wget libpugixml-dev
+      - 
