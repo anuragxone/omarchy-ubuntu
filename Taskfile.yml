@@ -52,6 +52,8 @@ tasks:
     cmds:
       - docker build -t libxcb-errors-build:0.1 -f Dockerfile.libxcb-errors .
       - docker run --mount type=bind,src=/usr/local,dst=/usr/local libxcb-errors-build:0.1
+    status:
+      - test -f $PREFIX/lib/libxcb-errors.so
 
   gcc:
     deps: [build-docker-ubuntu-non-root-image]
@@ -191,6 +193,13 @@ tasks:
     status:
       - test -f $PREFIX/lib/libhyprcursor.so
 
+  pre-req-apt-deps:
+    cmds:
+      - sudo sed -i '/^Types:/ s/deb/deb deb-src/g' /etc/apt/sources.list.d/ubuntu.sources
+      - sudo apt-get update && sudo apt-get build-dep -y wayland libinput libdisplay-info
+    status:
+      - 'grep -q "Types: deb deb-src" /etc/apt/sources.list.d/ubuntu.sources'
+
   aquamarine:
     dir: "{{.PWD}}/hypr"
     deps:
@@ -201,6 +210,8 @@ tasks:
         libinput,
         wayland,
         wayland-protocols,
+        pre-req-apt-deps,
+        libdisplay-info,
       ]
     vars:
       VERSION: "0.9.5"
@@ -210,7 +221,7 @@ tasks:
       CMAKE_PREFIX_PATH: "/usr/local:/usr"
       PKG_CONFIG_PATH: "/usr/local/lib/pkgconfig:/usr/local/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig"
     cmds:
-      - sudo apt-get install -y file libjxl-dev libmagic-dev librsvg2-dev libjpeg-turbo8-dev libcairo2-dev libpango1.0-dev libpng-dev libwebp-dev libzip-dev libtomlplusplus-dev
+      # - sudo apt-get install -y file libjxl-dev libmagic-dev librsvg2-dev libjpeg-turbo8-dev libcairo2-dev libpango1.0-dev libpng-dev libwebp-dev libzip-dev libtomlplusplus-dev
       - sudo apt-get install -y libsystemd-dev libegl-dev libegl1-mesa-dev libglvnd-dev libdrm-dev libseat-dev libgbm-dev hwdata libudev-dev
       - wget https://github.com/hyprwm/aquamarine/archive/refs/tags/v{{.VERSION}}.tar.gz
       - tar -xvzf v{{.VERSION}}.tar.gz
@@ -221,3 +232,48 @@ tasks:
         sudo $CMAKE --install build
     status:
       - test -f $PREFIX/lib/libaquamarine.so
+
+  git-clone-hyprland:
+    dir: "{{.PWD}}/hypr"
+    cmd: git clone https://github.com/hyprwm/Hyprland.git -b "v{{.VERSION}}" --recursive hyprland
+    status: 
+      - test -d hyprland
+      
+
+  hyprland:
+    dir: "{{.PWD}}/hypr"
+    deps:
+      [
+        hyprcursor,
+        hyprutils,
+        hyprgraphics,
+        hyprlang,
+        hyprwayland-scanner,
+        aquamarine,
+        libxcb-errors,
+      ]
+    vars:
+      VERSION: "0.51.1"
+    env:
+      CC: "{{.PREFIX}}/bin/gcc"
+      CXX: "{{.PREFIX}}/bin/g++"
+      CMAKE_PREFIX_PATH: "/usr/local:/usr"
+      PKG_CONFIG_PATH: "/usr/local/lib/pkgconfig:/usr/local/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig"
+      # LD_RUN_PATH: "/usr/local/lib:/usr/local/lib/x86_64-linux-gnu"
+      # LD_LIBRARY_PATH: "/usr/local/lib:/usr/local/lib/x86_64-linux-gnu"
+      # LIBRARY_PATH: "/usr/local/lib:/usr/local/lib/x86_64-linux-gnu"
+
+    cmds:
+      # - sudo apt-get install -y file libjxl-dev libmagic-dev librsvg2-dev libjpeg-turbo8-dev libcairo2-dev libpango1.0-dev libpng-dev libwebp-dev libzip-dev libtomlplusplus-dev
+      # - sudo apt-get install -y libsystemd-dev libegl-dev libegl1-mesa-dev libglvnd-dev libdrm-dev libseat-dev libgbm-dev hwdata libudev-dev
+      - sudo apt-get install -y glslang-dev glslang-tools libliftoff-dev libx11-dev uuid-dev xwayland libre2-dev libxcb-xfixes0-dev libxcb-icccm4-dev libxcb-composite0-dev libxcb-res0-dev
+      - sudo apt-get remove -y libwayland-dev libwayland-bin
+      - task: git-clone-hyprland
+      - |
+        cd hyprland
+        make clear
+        $CMAKE --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX:STRING=$PREFIX -S . -B ./build
+        $CMAKE --build ./build --config Release --target all -j`nproc 2>/dev/null || getconf NPROCESSORS_CONF`
+        sudo $CMAKE --install ./build
+    status:
+     - test -f $PREFIX/bin/Hyprland
