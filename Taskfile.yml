@@ -211,7 +211,6 @@ tasks:
         wayland,
         wayland-protocols,
         pre-req-apt-deps,
-        libdisplay-info,
       ]
     vars:
       VERSION: "0.9.5"
@@ -235,10 +234,11 @@ tasks:
 
   git-clone-hyprland:
     dir: "{{.PWD}}/hypr"
+    vars:
+      VERSION: "0.51.1"
     cmd: git clone https://github.com/hyprwm/Hyprland.git -b "v{{.VERSION}}" --recursive hyprland
-    status: 
+    status:
       - test -d hyprland
-      
 
   hyprland:
     dir: "{{.PWD}}/hypr"
@@ -252,8 +252,7 @@ tasks:
         aquamarine,
         libxcb-errors,
       ]
-    vars:
-      VERSION: "0.51.1"
+
     env:
       CC: "{{.PREFIX}}/bin/gcc"
       CXX: "{{.PREFIX}}/bin/g++"
@@ -276,4 +275,4 @@ tasks:
         $CMAKE --build ./build --config Release --target all -j`nproc 2>/dev/null || getconf NPROCESSORS_CONF`
         sudo $CMAKE --install ./build
     status:
-     - test -f $PREFIX/bin/Hyprland
+      - test -f $PREFIX/bin/Hyprland

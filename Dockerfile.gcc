@@ -4,7 +4,7 @@ ARG HOME_DIR=/home/ubuntu
 ARG GCC_VERSION=15.2.0
 
 RUN <<EOF
-    # install libinput's deps
+    # install gcc's deps
     sudo apt-get update
     sudo apt-get build-dep -y gcc-14
 EOF

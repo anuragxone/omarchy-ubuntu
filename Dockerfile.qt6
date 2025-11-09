@@ -5,14 +5,14 @@ ARG QT_VERSION_MAJOR=6.10
 ARG QT_VERSION_MINOR=${QT_VERSION_MAJOR}.0
 
 RUN <<EOF
-    # install libinput's deps
+    # install qt6's deps
     sudo apt-get update
     sudo apt-get build-dep -y qt6-base qt6-declarative qt6-wayland qt6-svg
     sudo apt-get install -y libdirectfb-dev libjemalloc-dev qt6-tools-dev libtiff-dev libmng-dev
 EOF
 
 RUN <<EOF
-    # using gcc official mirror to fetch source code for qt 6.10
+    # using qt official mirror to fetch source code for qt 6.10
     wget https://qt.mirror.constant.com/archive/qt/${QT_VERSION_MAJOR}/${QT_VERSION_MINOR}/single/qt-everywhere-src-${QT_VERSION_MINOR}.tar.xz
     tar -xvf qt-everywhere-src-${QT_VERSION_MINOR}.tar.xz
 EOF
