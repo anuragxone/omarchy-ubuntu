@@ -21,6 +21,7 @@ RUN <<EOF
     ./autogen.sh
     ./configure --prefix=/usr/local
     make
+    sudo make install
 EOF
 
-CMD sudo make install
+# CMD sudo make install

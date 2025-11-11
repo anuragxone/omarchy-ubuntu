@@ -19,6 +19,7 @@ WORKDIR ${HOME_DIR}/libdisplay-info-${LIBDISPLAY_INFO_VERSION}
 RUN <<EOF
     meson setup build/ --prefix=/usr/local
     ninja -C build/
+    sudo ninja -C build/ install
 EOF
 
-CMD sudo ninja -C build/ install
+# CMD sudo ninja -C build/ install

@@ -20,6 +20,7 @@ WORKDIR ${HOME_DIR}/gcc-${GCC_VERSION}
 RUN <<EOF
     ./configure --prefix=/usr/local --disable-bootstrap --disable-multilib --enable-languages=c,c++
     make -j$(nproc)
+    sudo make install
 EOF
 
-CMD sudo make install
+# CMD sudo make install

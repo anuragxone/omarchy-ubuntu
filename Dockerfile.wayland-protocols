@@ -1,4 +1,4 @@
-FROM wayland-build:0.1
+FROM wayland
 ARG HOME_DIR=/home/ubuntu
 
 ARG WAYLAND_PROTOCOLS_VERSION=1.45
@@ -28,7 +28,8 @@ WORKDIR ${HOME_DIR}/wayland-protocols-${WAYLAND_PROTOCOLS_VERSION}
 RUN <<EOF
     meson setup build/ --prefix=/usr/local
     ninja -C build/
+    sudo ninja -C build/ install
 EOF
 
 
-CMD sudo ninja -C build/ install
+# CMD sudo ninja -C build/ install

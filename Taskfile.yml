@@ -18,48 +18,54 @@ tasks:
   wayland:
     deps: [build-docker-ubuntu-non-root-image]
     cmds:
-      - docker build -t wayland-build:0.1 -f Dockerfile.wayland .
-      - docker run --mount type=bind,src=/usr/local,dst=/usr/local wayland-build:0.1
+      - docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
+      - docker create --name {{.TASK}} {{.TASK}}
+      - sudo docker cp {{.TASK}}:$PREFIX/. $PREFIX
     status:
       - test -f $PREFIX/lib/x86_64-linux-gnu/libwayland-server.so
 
   wayland-protocols:
     deps: [wayland]
     cmds:
-      - docker build -t wayland-protocols-build:0.1 -f Dockerfile.wayland-protocols .
-      - docker run --mount type=bind,src=/usr/local,dst=/usr/local wayland-protocols-build:0.1
+      - docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
+      - docker create --name {{.TASK}} {{.TASK}}
+      - sudo docker cp {{.TASK}}:$PREFIX/. $PREFIX
     status:
       - test -d $PREFIX/include/wayland-protocols
 
   libdisplay-info:
     deps: [build-docker-ubuntu-non-root-image]
     cmds:
-      - docker build -t libdisplay-info-build:0.1 -f Dockerfile.libdisplay-info .
-      - docker run --mount type=bind,src=/usr/local,dst=/usr/local libdisplay-info-build:0.1
+      - docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
+      - docker create --name {{.TASK}} {{.TASK}}
+      - sudo docker cp {{.TASK}}:$PREFIX/. $PREFIX
     status:
       - test -f $PREFIX/lib/x86_64-linux-gnu/libdisplay-info.so
 
   libinput:
     deps: [build-docker-ubuntu-non-root-image]
     cmds:
-      - docker build -t libinput-build:0.1 -f Dockerfile.libinput .
-      - docker run --mount type=bind,src=/usr/local,dst=/usr/local libinput-build:0.1
+      - docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
+      - docker create --name {{.TASK}} {{.TASK}}
+      - sudo docker cp {{.TASK}}:$PREFIX/. $PREFIX
     status:
       - test -f $PREFIX/lib/x86_64-linux-gnu/libinput.so
 
   libxcb-errors:
     deps: [build-docker-ubuntu-non-root-image]
     cmds:
-      - docker build -t libxcb-errors-build:0.1 -f Dockerfile.libxcb-errors .
-      - docker run --mount type=bind,src=/usr/local,dst=/usr/local libxcb-errors-build:0.1
+      - docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
+      - docker create --name {{.TASK}} {{.TASK}}
+      - sudo docker cp {{.TASK}}:$PREFIX/. $PREFIX
     status:
       - test -f $PREFIX/lib/libxcb-errors.so
 
   gcc:
     deps: [build-docker-ubuntu-non-root-image]
     cmds:
-      - docker build -t gcc-build:0.1 -f Dockerfile.gcc .
-      - docker run --mount type=bind,src=/usr/local,dst=/usr/local gcc-build:0.1
+      - docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
+      - docker create --name {{.TASK}} {{.TASK}}
+      - sudo docker cp {{.TASK}}:$PREFIX/. $PREFIX
     status:
       - test -f /usr/local/bin/gcc
       - test -f /usr/local/bin/g++
@@ -67,8 +73,9 @@ tasks:
   qt6:
     deps: [build-docker-ubuntu-non-root-image]
     cmds:
-      - docker build -t qt-build:0.1 -f Dockerfile.qt6 .
-      - docker run --mount type=bind,src=/usr/local,dst=/usr/local qt-build:0.1
+      - docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
+      - docker create --name {{.TASK}} {{.TASK}}
+      - sudo docker cp {{.TASK}}:$PREFIX/. $PREFIX
     status:
       - test -f /usr/local/lib/libQt6Core.so
 
@@ -276,7 +283,7 @@ tasks:
         sudo $CMAKE --install ./build
     status:
       - test -f $PREFIX/bin/Hyprland
-  
+
   roc-toolkit:
     deps: [build-docker-ubuntu-non-root-image]
     cmds:
@@ -285,7 +292,7 @@ tasks:
       - sudo docker cp roc-build:/usr/local/. /usr/local
     status:
       - test -f $PREFIX/lib/libroc.so
-  
+
   libcamera:
     deps: [build-docker-ubuntu-non-root-image]
     cmds:
@@ -293,7 +300,7 @@ tasks:
       - docker run --mount type=bind,src=/usr/local,dst=/usr/local libcamera-build:0.1
     status:
       - test -f $PREFIX/lib/x86_64-linux-gnu/libcamera.so
-  
+
   pipewire:
     deps: [roc-toolkit, libcamera]
     cmds:

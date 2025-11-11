@@ -25,6 +25,7 @@ RUN <<EOF
     meson setup build
     meson configure build -Dprefix=/usr/local
     meson compile -C build
+    sudo meson install -C build
 EOF
 
-CMD sudo meson install -C build
+# CMD sudo meson install -C build
