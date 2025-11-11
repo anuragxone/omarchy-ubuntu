@@ -276,3 +276,27 @@ tasks:
         sudo $CMAKE --install ./build
     status:
       - test -f $PREFIX/bin/Hyprland
+  
+  roc-toolkit:
+    deps: [build-docker-ubuntu-non-root-image]
+    cmds:
+      - docker build -t roc-build:0.1 -f Dockerfile.roc-toolkit .
+      - docker run --mount type=bind,src=/usr/local,dst=/usr/local roc-build:0.1
+    status:
+      - test -f $PREFIX/lib/libroc.so
+  
+  libcamera:
+    deps: [build-docker-ubuntu-non-root-image]
+    cmds:
+      - docker build -t libcamera-build:0.1 -f Dockerfile.libcamera .
+      - docker run --mount type=bind,src=/usr/local,dst=/usr/local libcamera-build:0.1
+    status:
+      - test -f $PREFIX/lib/x86_64-linux-gnu/libcamera.so
+  
+  pipewire:
+    deps: [roc-toolkit, libcamera]
+    cmds:
+      - docker build -t pipewire-build:0.1 -f Dockerfile.pipewire .
+      - docker run --mount type=bind,src=/usr/local,dst=/usr/local pipewire-build:0.1
+    status:
+      - test -f $PREFIX/lib/x86_64-linux-gnu/libpipewire*.so

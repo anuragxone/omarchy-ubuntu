@@ -1,0 +1,26 @@
+FROM roc-build:0.1
+ARG HOME_DIR=/home/ubuntu
+
+ARG LIBCAMERA_VERSION=0.5.2
+
+RUN \
+    # install pipewire's deps
+    sudo apt-get update && \
+    sudo apt-get build-dep -y libcamera && \
+    sudo apt-get install -y git pkgconf pkg-config python3-sphinxcontrib.doxylink libyuv-dev qt6-base-dev qt6-tools-dev
+
+WORKDIR ${HOME_DIR}
+
+RUN <<EOF
+    git clone https://git.libcamera.org/libcamera/libcamera.git -b v${LIBCAMERA_VERSION}
+EOF
+
+WORKDIR ${HOME_DIR}/libcamera
+
+RUN <<EOF
+    meson setup build -Ddocumentation=disabled
+    ninja -C build
+    sudo ninja -C build install
+EOF
+
+CMD sudo ninja -C build install

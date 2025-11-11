@@ -1,0 +1,30 @@
+FROM libcamera-build:0.1
+ARG HOME_DIR=/home/ubuntu
+
+ARG PIPEWIRE_VERSION=1.5.83
+
+RUN \
+    # install pipewire's deps
+    sudo apt-get update && \
+    sudo apt-get build-dep -y pipewire && \
+    sudo apt-get install -y git libfftw3-dev libebur128-dev libfdk-aac-dev libspandsp-dev libfreeaptx-dev liblc3-dev \
+                            python3-sphinx python3-sphinx-rtd-theme python3-breathe python3-lxml gobject-introspection \
+                            libgirepository1.0-dev valgrind doxygen pulseaudio-utils \
+                            openal-tools
+
+WORKDIR ${HOME_DIR}
+
+RUN <<EOF
+    wget https://gitlab.freedesktop.org/pipewire/pipewire/-/archive/${PIPEWIRE_VERSION}/pipewire-${PIPEWIRE_VERSION}.tar.gz
+    tar -xvzf pipewire-${PIPEWIRE_VERSION}.tar.gz
+EOF
+
+WORKDIR ${HOME_DIR}/pipewire-${PIPEWIRE_VERSION}
+
+RUN <<EOF
+    meson setup build
+    meson configure build -Dprefix=/usr/local
+    meson compile -C build
+EOF
+
+CMD sudo meson install -C build
