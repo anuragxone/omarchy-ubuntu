@@ -281,7 +281,8 @@ tasks:
     deps: [build-docker-ubuntu-non-root-image]
     cmds:
       - docker build -t roc-build:0.1 -f Dockerfile.roc-toolkit .
-      - docker run --mount type=bind,src=/usr/local,dst=/usr/local roc-build:0.1
+      - docker create --name roc-build roc-build:0.1
+      - sudo docker cp roc-build:/usr/local/. /usr/local
     status:
       - test -f $PREFIX/lib/libroc.so
   

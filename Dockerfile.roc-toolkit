@@ -22,4 +22,3 @@ RUN <<EOF
     sudo scons install --prefix=/usr/local --build-3rdparty=openfec
 EOF
 
-CMD sudo scons install --prefix=/usr/local --build-3rdparty=openfec
