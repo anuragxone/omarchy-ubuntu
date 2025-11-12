@@ -310,6 +310,15 @@ tasks:
       - sudo docker cp {{.TASK}}:$PREFIX/. $PREFIX
     status:
       - test -f $PREFIX/lib/x86_64-linux-gnu/libpipewire*.so
+  
+  iniparser:
+    deps: [build-docker-ubuntu-non-root-image]
+    cmds:
+      - docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
+      - docker create --name {{.TASK}} {{.TASK}}
+      - sudo docker cp {{.TASK}}:$PREFIX/. $PREFIX
+    status:
+      - test -f $PREFIX/lib/libiniparser.so
 
   hyprland-protocols:
     dir: "{{.PWD}}/hypr"
@@ -344,7 +353,7 @@ tasks:
         qt6,
         wayland,
         wayland-protocols,
-        hyprland-protocols
+        hyprland-protocols,
       ]
     vars:
       VERSION: 1.3.11
@@ -362,27 +371,50 @@ tasks:
         cd {{.TASK}}
         $CMAKE -DCMAKE_INSTALL_LIBEXECDIR=$PREFIX/lib -DCMAKE_INSTALL_PREFIX=$PREFIX -B build
         $CMAKE --build build --parallel
-        sudo $CMAKE --install build 
-    # status:
-    #   - test -f $PREFIX/bin/Hyprland
-  hyprland-guiutils:
+        sudo $CMAKE --install build
+    status:
+      - test -f $PREFIX/lib/xdg-desktop-portal-hyprland
+
+  hyprtoolkit:
     dir: "{{.PWD}}/hypr"
-    deps: [hyprlang]
+    deps: [hyprlang, hyprgraphics, hyprutils, aquamarine]
     vars:
-      VERSION: "0.1.13"
+      VERSION: "0.3.0"
     env:
       CC: "{{.PREFIX}}/bin/gcc"
       CXX: "{{.PREFIX}}/bin/g++"
       CMAKE_PREFIX_PATH: "/usr/local:/usr"
       PKG_CONFIG_PATH: "/usr/local/lib/pkgconfig:/usr/local/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig"
     cmds:
-      - sudo apt-get install -y file libjxl-dev libmagic-dev librsvg2-dev libjpeg-turbo8-dev libcairo2-dev libpango1.0-dev libpng-dev libwebp-dev libzip-dev libtomlplusplus-dev
-      - wget https://github.com/hyprwm/hyprcursor/archive/refs/tags/v{{.VERSION}}.tar.gz
+      - sudo apt-get install -y libiniparser-dev libgtest-dev
+      - wget https://github.com/hyprwm/hyprtoolkit/archive/refs/tags/v{{.VERSION}}.tar.gz
       - tar -xvzf v{{.VERSION}}.tar.gz
       - |
-        cd hyprcursor-{{.VERSION}}
+        cd hyprtoolkit-{{.VERSION}}
+        $CMAKE --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX:PATH=$PREFIX -S . -B ./build
+        $CMAKE --build ./build --config Release --target all -j`nproc 2>/dev/null || getconf NPROCESSORS_CONF`
+        sudo $CMAKE --install build
+    status:
+      - test -f $PREFIX/lib/libhyprtoolkit.so
+
+  hyprland-guiutils:
+    dir: "{{.PWD}}/hypr"
+    deps: [hyprlang,hyprtoolkit,hyprutils,cmake-latest]
+    vars:
+      VERSION: "0.1.0"
+    env:
+      CC: "{{.PREFIX}}/bin/gcc"
+      CXX: "{{.PREFIX}}/bin/g++"
+      CMAKE_PREFIX_PATH: "/usr/local:/usr"
+      PKG_CONFIG_PATH: "/usr/local/lib/pkgconfig:/usr/local/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig"
+    cmds:
+      - sudo apt-get install -y 
+      - wget https://github.com/hyprwm/hyprland-guiutils/archive/refs/tags/v{{.VERSION}}.tar.gz
+      - tar -xvzf v{{.VERSION}}.tar.gz
+      - |
+        cd hyprland-guiutils-{{.VERSION}}
         $CMAKE --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX:PATH=$PREFIX -S . -B ./build
         $CMAKE --build ./build --config Release --target all -j`nproc 2>/dev/null || getconf _NPROCESSORS_CONF`
         sudo $CMAKE --install build
     status:
-      - test -f $PREFIX/lib/libhyprcursor.so
+      - test -f $PREFIX/bin/hyprland-dialog

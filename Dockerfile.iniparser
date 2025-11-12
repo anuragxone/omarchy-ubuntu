@@ -1,0 +1,28 @@
+FROM ubuntu-non_root:noble
+ARG HOME_DIR=/home/ubuntu
+
+ARG INIPARSER_VERSION=4.2.6
+
+RUN \
+    # install pipewire's deps
+    sudo apt-get update && \
+    sudo apt-get build-dep -y iniparser
+
+WORKDIR ${HOME_DIR}
+
+RUN <<EOF
+    wget https://gitlab.com/iniparser/iniparser/-/archive/v${INIPARSER_VERSION}/iniparser-v${INIPARSER_VERSION}.tar.gz
+    tar -xvzf iniparser-v${INIPARSER_VERSION}.tar.gz
+EOF
+
+WORKDIR ${HOME_DIR}/iniparser-v${INIPARSER_VERSION}
+
+RUN <<EOF
+    mkdir build
+    cd build
+    cmake ..
+    make all
+    sudo make install
+EOF
+
+# CMD sudo meson install -C build
