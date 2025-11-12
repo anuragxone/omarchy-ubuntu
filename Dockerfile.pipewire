@@ -1,4 +1,4 @@
-FROM libcamera-build:0.1
+FROM libcamera
 ARG HOME_DIR=/home/ubuntu
 
 ARG PIPEWIRE_VERSION=1.5.83

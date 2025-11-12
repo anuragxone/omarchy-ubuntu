@@ -1,4 +1,4 @@
-FROM roc-build:0.1
+FROM roc-toolkit
 ARG HOME_DIR=/home/ubuntu
 
 ARG LIBCAMERA_VERSION=0.5.2

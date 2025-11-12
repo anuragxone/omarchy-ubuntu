@@ -287,24 +287,102 @@ tasks:
   roc-toolkit:
     deps: [build-docker-ubuntu-non-root-image]
     cmds:
-      - docker build -t roc-build:0.1 -f Dockerfile.roc-toolkit .
-      - docker create --name roc-build roc-build:0.1
-      - sudo docker cp roc-build:/usr/local/. /usr/local
+      - docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
+      - docker create --name {{.TASK}} {{.TASK}}
+      - sudo docker cp {{.TASK}}:$PREFIX/. $PREFIX
     status:
       - test -f $PREFIX/lib/libroc.so
 
   libcamera:
     deps: [build-docker-ubuntu-non-root-image]
     cmds:
-      - docker build -t libcamera-build:0.1 -f Dockerfile.libcamera .
-      - docker run --mount type=bind,src=/usr/local,dst=/usr/local libcamera-build:0.1
+      - docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
+      - docker create --name {{.TASK}} {{.TASK}}
+      - sudo docker cp {{.TASK}}:$PREFIX/. $PREFIX
     status:
       - test -f $PREFIX/lib/x86_64-linux-gnu/libcamera.so
 
   pipewire:
     deps: [roc-toolkit, libcamera]
     cmds:
-      - docker build -t pipewire-build:0.1 -f Dockerfile.pipewire .
-      - docker run --mount type=bind,src=/usr/local,dst=/usr/local pipewire-build:0.1
+      - docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
+      - docker create --name {{.TASK}} {{.TASK}}
+      - sudo docker cp {{.TASK}}:$PREFIX/. $PREFIX
     status:
       - test -f $PREFIX/lib/x86_64-linux-gnu/libpipewire*.so
+
+  hyprland-protocols:
+    dir: "{{.PWD}}/hypr"
+    env:
+      CC: "{{.PREFIX}}/bin/gcc"
+      CXX: "{{.PREFIX}}/bin/g++"
+      CMAKE_PREFIX_PATH: "/usr/local:/usr"
+      PKG_CONFIG_PATH: "/usr/local/lib/pkgconfig:/usr/local/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig"
+    vars:
+      VERSION: 0.7.0
+    cmds:
+      - sudo apt-get install -y meson
+      - wget https://github.com/hyprwm/hyprland-protocols/archive/refs/tags/v{{.VERSION}}.tar.gz
+      - tar -xvzf v{{.VERSION}}.tar.gz
+      - |
+        cd hyprland-protocols-{{.VERSION}}
+        meson setup build --prefix=$PREFIX
+        sudo meson install -C build
+    status:
+      - test -d $PREFIX/share/hyprland-protocols
+
+  xdg-desktop-portal-hyprland:
+    dir: "{{.PWD}}/hypr"
+    deps:
+      [
+        gcc,
+        hyprutils,
+        hyprgraphics,
+        hyprlang,
+        hyprwayland-scanner,
+        pipewire,
+        qt6,
+        wayland,
+        wayland-protocols,
+        hyprland-protocols
+      ]
+    vars:
+      VERSION: 1.3.11
+
+    env:
+      CC: "{{.PREFIX}}/bin/gcc"
+      CXX: "{{.PREFIX}}/bin/g++"
+      CMAKE_PREFIX_PATH: "/usr/local:/usr"
+      PKG_CONFIG_PATH: "/usr/local/lib/pkgconfig:/usr/local/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig"
+
+    cmds:
+      - sudo apt-get install -y libinih-dev libsdbus-c++-dev uuid-dev xdg-desktop-portal-dev libdouble-conversion3 libb2-1 libmd4c0
+      - git clone --recursive https://github.com/hyprwm/xdg-desktop-portal-hyprland.git -b v{{.VERSION}}
+      - |
+        cd {{.TASK}}
+        $CMAKE -DCMAKE_INSTALL_LIBEXECDIR=$PREFIX/lib -DCMAKE_INSTALL_PREFIX=$PREFIX -B build
+        $CMAKE --build build --parallel
+        sudo $CMAKE --install build 
+    # status:
+    #   - test -f $PREFIX/bin/Hyprland
+  hyprland-guiutils:
+    dir: "{{.PWD}}/hypr"
+    deps: [hyprlang]
+    vars:
+      VERSION: "0.1.13"
+    env:
+      CC: "{{.PREFIX}}/bin/gcc"
+      CXX: "{{.PREFIX}}/bin/g++"
+      CMAKE_PREFIX_PATH: "/usr/local:/usr"
+      PKG_CONFIG_PATH: "/usr/local/lib/pkgconfig:/usr/local/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig"
+    cmds:
+      - sudo apt-get install -y file libjxl-dev libmagic-dev librsvg2-dev libjpeg-turbo8-dev libcairo2-dev libpango1.0-dev libpng-dev libwebp-dev libzip-dev libtomlplusplus-dev
+      - wget https://github.com/hyprwm/hyprcursor/archive/refs/tags/v{{.VERSION}}.tar.gz
+      - tar -xvzf v{{.VERSION}}.tar.gz
+      - |
+        cd hyprcursor-{{.VERSION}}
+        $CMAKE --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX:PATH=$PREFIX -S . -B ./build
+        $CMAKE --build ./build --config Release --target all -j`nproc 2>/dev/null || getconf _NPROCESSORS_CONF`
+        sudo $CMAKE --install build
+    status:
+      - test -f $PREFIX/lib/libhyprcursor.so

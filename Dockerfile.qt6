@@ -21,10 +21,12 @@ WORKDIR ${HOME_DIR}/qt-everywhere-src-${QT_VERSION_MINOR}
 
 RUN <<EOF
     mkdir build && cd build
-    ../configure --prefix=/usr/local -nomake tests -nomake examples -submodules qtbase,qtwayland,qtdeclarative,qtsvg -developer-build
+    ../configure --prefix=/usr/local -nomake tests -nomake examples -submodules qtbase,qtwayland,qtdeclarative -developer-build
     cmake --build . --parallel
     cd build
     sudo cmake --install .
 EOF
+
+RUN rm -rf build/
 
 # CMD cd build && sudo cmake --install .
