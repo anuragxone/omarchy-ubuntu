@@ -1,4 +1,4 @@
-FROM ubuntu-non_root:noble
+FROM noble-sudo
 ARG HOME_DIR=/home/ubuntu
 
 ARG GCC_VERSION=15.2.0

@@ -1,4 +1,4 @@
-FROM ubuntu-non_root:noble
+FROM noble-sudo
 ARG HOME_DIR=/home/ubuntu
 
 ARG ROC_VERSION=0.4.0

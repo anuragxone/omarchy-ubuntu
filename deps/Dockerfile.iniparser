@@ -1,4 +1,4 @@
-FROM ubuntu-non_root:noble
+FROM noble-sudo
 ARG HOME_DIR=/home/ubuntu
 
 ARG INIPARSER_VERSION=4.2.6
