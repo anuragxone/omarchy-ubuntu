@@ -5,14 +5,19 @@ version: "3"
 env:
   PREFIX: "/usr/local"
 
+vars:
+  DIR: './deps'
+
 tasks:
   noble-sudo:
+    dir: "{{.DIR}}"
     cmd: docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
     status:
       - docker image inspect ubuntu-non_root:noble > /dev/null 2>&1
 
   wayland:
     deps: [noble-sudo]
+    dir: "{{.DIR}}"
     cmds:
       - docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
       - docker create --name {{.TASK}} {{.TASK}}
@@ -22,6 +27,7 @@ tasks:
 
   wayland-protocols:
     deps: [wayland]
+    dir: "{{.DIR}}"
     cmds:
       - docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
       - docker create --name {{.TASK}} {{.TASK}}
@@ -31,6 +37,7 @@ tasks:
 
   libdisplay-info:
     deps: [noble-sudo]
+    dir: "{{.DIR}}"
     cmds:
       - docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
       - docker create --name {{.TASK}} {{.TASK}}
@@ -40,6 +47,7 @@ tasks:
 
   libinput:
     deps: [noble-sudo]
+    dir: "{{.DIR}}"
     cmds:
       - docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
       - docker create --name {{.TASK}} {{.TASK}}
@@ -49,6 +57,7 @@ tasks:
 
   libxcb-errors:
     deps: [noble-sudo]
+    dir: "{{.DIR}}"
     cmds:
       - docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
       - docker create --name {{.TASK}} {{.TASK}}
@@ -58,6 +67,7 @@ tasks:
 
   gcc:
     deps: [noble-sudo]
+    dir: "{{.DIR}}"
     cmds:
       - docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
       - docker create --name {{.TASK}} {{.TASK}}
@@ -68,6 +78,7 @@ tasks:
 
   qt6:
     deps: [noble-sudo]
+    dir: "{{.DIR}}"
     cmds:
       - docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
       - docker create --name {{.TASK}} {{.TASK}}

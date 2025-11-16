@@ -3,17 +3,18 @@
 version: "3"
 
 includes:
-  deps: deps
+  deps:
+    taskfile: ./deps
+    flatten: true
 
 env:
   CMAKE: "{{.HOME}}/.local/cmake-{{.CMAKE_VERSION}}-linux-x86_64/bin/cmake"
+  PREFIX: "/usr/local"
   HYPR_DIR: "{{.PWD}}/hypr"
   CC: "{{.PREFIX}}/bin/gcc"
   CXX: "{{.PREFIX}}/bin/g++"
   CMAKE_PREFIX_PATH: "/usr/local:/usr"
   PKG_CONFIG_PATH: "/usr/local/lib/pkgconfig:/usr/local/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig"
-
-dir: $HYPR_DIR
 
 tasks:
   cmake:
@@ -50,11 +51,6 @@ tasks:
     deps: [gcc, cmake]
     vars:
       VERSION: "0.10.1"
-    env:
-      CC: "{{.PREFIX}}/bin/gcc"
-      CXX: "{{.PREFIX}}/bin/g++"
-      CMAKE_PREFIX_PATH: "/usr/local:/usr"
-      PKG_CONFIG_PATH: "/usr/local/lib/pkgconfig:/usr/local/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig"
     cmds:
       - sudo apt-get install -y git build-essential wget tar gzip pkgconf pkg-config libpixman-1-dev
       - wget https://github.com/hyprwm/hyprutils/archive/refs/tags/v{{.VERSION}}.tar.gz
