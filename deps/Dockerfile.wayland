@@ -21,5 +21,3 @@ RUN <<EOF
     ninja -C build/
     sudo ninja -C build/ install
 EOF
-
-# CMD sudo ninja -C build/ install

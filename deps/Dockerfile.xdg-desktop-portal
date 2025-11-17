@@ -1,0 +1,24 @@
+FROM noble-sudo
+ARG HOME_DIR=/home/ubuntu
+
+ARG VERSION=1.20.3
+
+RUN <<EOF
+    # install xdp's deps
+    sudo apt-get update
+    sudo apt-get build-dep -y xdg-desktop-portal
+    sudo apt-get install -y meson cmake wget libgstreamer-plugins-base1.0-dev libumockdev-dev gstreamer1.0-plugins-good gstreamer1.0-tools
+EOF
+
+RUN <<EOF
+    wget https://github.com/flatpak/xdg-desktop-portal/releases/download/${VERSION}/xdg-desktop-portal-${VERSION}.tar.xz
+    tar -xvf xdg-desktop-portal-${VERSION}.tar.xz
+EOF
+
+WORKDIR ${HOME_DIR}/xdg-desktop-portal-${VERSION}
+
+RUN <<EOF
+    meson setup . build/
+    meson compile -C build/
+    sudo meson install -C build/
+EOF

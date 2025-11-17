@@ -1,0 +1,21 @@
+FROM noble-sudo
+ARG HOME_DIR=/home/ubuntu
+
+ARG UWSM_VERSION=0.24.3
+
+RUN <<EOF
+    sudo apt-get update
+    sudo apt-get install -y equivs python-dbus-dev python3-dbus
+EOF
+
+RUN <<EOF
+    wget https://github.com/Vladimir-csp/uwsm/archive/refs/tags/v${UWSM_VERSION}.tar.gz
+    tar -xvzf v${UWSM_VERSION}.tar.gz
+EOF
+
+WORKDIR ${HOME_DIR}/uwsm-${UWSM_VERSION}
+
+RUN <<EOF
+    sed -i 's/apt-get install/apt-get install -y/g' build-deb.sh
+    ./build-deb.sh
+EOF

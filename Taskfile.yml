@@ -7,6 +7,9 @@ includes:
     taskfile: ./deps
     flatten: true
 
+vars:
+  CMAKE_VERSION: "4.1.2"
+
 env:
   CMAKE: "{{.HOME}}/.local/cmake-{{.CMAKE_VERSION}}-linux-x86_64/bin/cmake"
   PREFIX: "/usr/local"
@@ -19,8 +22,6 @@ env:
 tasks:
   cmake:
     dir: "$HOME/.local"
-    vars:
-      CMAKE_VERSION: "4.1.2"
     cmds:
       - sudo apt-get update -y
       - sudo apt-get install -y wget tar gzip
@@ -32,6 +33,7 @@ tasks:
 
   hyprwayland-scanner:
     deps: [gcc, cmake]
+    dir: "{{.HYPR_DIR}}"
     vars:
       VERSION: "0.4.5"
     cmds:
@@ -47,16 +49,16 @@ tasks:
       - test -f $PREFIX/bin/hyprwayland-scanner
 
   hyprutils:
-    dir: "{{.PWD}}/hypr"
+    dir: "{{.HYPR_DIR}}"
     deps: [gcc, cmake]
     vars:
       VERSION: "0.10.1"
     cmds:
       - sudo apt-get install -y git build-essential wget tar gzip pkgconf pkg-config libpixman-1-dev
-      - wget https://github.com/hyprwm/hyprutils/archive/refs/tags/v{{.VERSION}}.tar.gz
+      - wget https://github.com/hyprwm/{{.TASK}}/archive/refs/tags/v{{.VERSION}}.tar.gz
       - tar -xvzf v{{.VERSION}}.tar.gz
       - |
-        cd hyprutils-{{.VERSION}}
+        cd {{.TASK}}-{{.VERSION}}
         $CMAKE --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX:PATH=$PREFIX -S . -B ./build
         $CMAKE --build ./build --config Release --target all -j`nproc 2>/dev/null || getconf NPROCESSORS_CONF`
         sudo $CMAKE --install build
@@ -64,7 +66,7 @@ tasks:
       - test -f $PREFIX/lib/libhyprutils.so
 
   hyprlang:
-    dir: "{{.PWD}}/hypr"
+    dir: "{{.HYPR_DIR}}"
     deps: [hyprutils]
     vars:
       VERSION: "0.6.5"
@@ -74,11 +76,10 @@ tasks:
       CMAKE_PREFIX_PATH: "/usr/local:/usr"
       PKG_CONFIG_PATH: "/usr/local/lib/pkgconfig:/usr/local/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig"
     cmds:
-      # - sudo apt-get install -y git build-essential wget tar gzip pkgconf pkg-config libpixman-1-dev
-      - wget https://github.com/hyprwm/hyprlang/archive/refs/tags/v{{.VERSION}}.tar.gz
+      - wget https://github.com/hyprwm/{{.TASK}}/archive/refs/tags/v{{.VERSION}}.tar.gz
       - tar -xvzf v{{.VERSION}}.tar.gz
       - |
-        cd hyprlang-{{.VERSION}}
+        cd {{.TASK}}-{{.VERSION}}
         $CMAKE --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX:PATH=$PREFIX -S . -B ./build
         $CMAKE --build ./build --config Release --target hyprlang -j`nproc 2>/dev/null || getconf _NPROCESSORS_CONF`
         sudo $CMAKE --install build
@@ -86,7 +87,7 @@ tasks:
       - test -f $PREFIX/lib/libhyprlang.so
 
   hyprgraphics:
-    dir: "{{.PWD}}/hypr"
+    dir: "{{.HYPR_DIR}}"
     deps: [hyprutils]
     vars:
       VERSION: "0.3.0"
@@ -97,10 +98,10 @@ tasks:
       PKG_CONFIG_PATH: "/usr/local/lib/pkgconfig:/usr/local/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig"
     cmds:
       - sudo apt-get install -y file libjxl-dev libmagic-dev librsvg2-dev libjpeg-turbo8-dev libcairo2-dev libpango1.0-dev libpng-dev libwebp-dev
-      - wget https://github.com/hyprwm/hyprgraphics/archive/refs/tags/v{{.VERSION}}.tar.gz
+      - wget https://github.com/hyprwm/{{.TASK}}/archive/refs/tags/v{{.VERSION}}.tar.gz
       - tar -xvzf v{{.VERSION}}.tar.gz
       - |
-        cd hyprgraphics-{{.VERSION}}
+        cd {{.TASK}}-{{.VERSION}}
         $CMAKE --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX:PATH=$PREFIX -S . -B ./build
         $CMAKE --build ./build --config Release --target all -j`nproc 2>/dev/null || getconf _NPROCESSORS_CONF`
         sudo $CMAKE --install build
@@ -108,23 +109,162 @@ tasks:
       - test -f $PREFIX/lib/libhyprgraphics.so
 
   hyprcursor:
-    dir: "{{.PWD}}/hypr"
+    dir: "{{.HYPR_DIR}}"
     deps: [hyprlang]
     vars:
       VERSION: "0.1.13"
-    env:
-      CC: "{{.PREFIX}}/bin/gcc"
-      CXX: "{{.PREFIX}}/bin/g++"
-      CMAKE_PREFIX_PATH: "/usr/local:/usr"
-      PKG_CONFIG_PATH: "/usr/local/lib/pkgconfig:/usr/local/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig"
     cmds:
       - sudo apt-get install -y file libjxl-dev libmagic-dev librsvg2-dev libjpeg-turbo8-dev libcairo2-dev libpango1.0-dev libpng-dev libwebp-dev libzip-dev libtomlplusplus-dev
-      - wget https://github.com/hyprwm/hyprcursor/archive/refs/tags/v{{.VERSION}}.tar.gz
+      - wget https://github.com/hyprwm/{{.TASK}}/archive/refs/tags/v{{.VERSION}}.tar.gz
       - tar -xvzf v{{.VERSION}}.tar.gz
       - |
-        cd hyprcursor-{{.VERSION}}
+        cd {{.TASK}}-{{.VERSION}}
         $CMAKE --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX:PATH=$PREFIX -S . -B ./build
         $CMAKE --build ./build --config Release --target all -j`nproc 2>/dev/null || getconf _NPROCESSORS_CONF`
         sudo $CMAKE --install build
     status:
       - test -f $PREFIX/lib/libhyprcursor.so
+
+  pre-req-apt-deps:
+    cmds:
+      - sudo sed -i '/^Types:/ s/deb/deb deb-src/g' /etc/apt/sources.list.d/ubuntu.sources
+      - sudo apt-get update && sudo apt-get build-dep -y wayland libinput libdisplay-info
+    status:
+      - 'grep -q "Types: deb deb-src" /etc/apt/sources.list.d/ubuntu.sources'
+
+  aquamarine:
+    dir: "{{.HYPR_DIR}}"
+    deps:
+      [
+        hyprwayland-scanner,
+        hyprutils,
+        libdisplay-info,
+        libinput,
+        wayland,
+        wayland-protocols,
+        pre-req-apt-deps,
+      ]
+    vars:
+      VERSION: "0.9.5"
+    cmds:
+      - sudo apt-get install -y libsystemd-dev libegl-dev libegl1-mesa-dev libglvnd-dev libdrm-dev libseat-dev libgbm-dev hwdata libudev-dev
+      - wget https://github.com/hyprwm/{{.TASK}}/archive/refs/tags/v{{.VERSION}}.tar.gz
+      - tar -xvzf v{{.VERSION}}.tar.gz
+      - |
+        cd {{.TASK}}-{{.VERSION}}
+        $CMAKE --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX:PATH=$PREFIX -S . -B ./build
+        $CMAKE --build ./build --config Release --target all --parallel
+        sudo $CMAKE --install build
+    status:
+      - test -f $PREFIX/lib/libaquamarine.so
+
+  git-clone-hyprland:
+    dir: "{{.PWD}}/hypr"
+    vars:
+      VERSION: "0.51.1"
+    cmd: git clone https://github.com/hyprwm/Hyprland.git -b "v{{.VERSION}}" --recursive hyprland
+    status:
+      - test -d hyprland
+
+  hyprland:
+    dir: "{{.HYPR_DIR}}"
+    deps:
+      [
+        hyprcursor,
+        hyprutils,
+        hyprgraphics,
+        hyprlang,
+        hyprwayland-scanner,
+        aquamarine,
+        libxcb-errors,
+      ]
+    cmds:
+      - sudo apt-get install -y glslang-dev glslang-tools libliftoff-dev libx11-dev uuid-dev xwayland libre2-dev libxcb-xfixes0-dev libxcb-icccm4-dev libxcb-composite0-dev libxcb-res0-dev
+      - sudo apt-get remove -y libwayland-dev
+      - task: git-clone-hyprland
+      - |
+        cd {{.TASK}}
+        make clear
+        $CMAKE --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX:STRING=$PREFIX -S . -B ./build
+        $CMAKE --build ./build --config Release --target all --parallel
+        sudo $CMAKE --install ./build
+    status:
+      - test -f $PREFIX/bin/Hyprland
+
+  hyprland-protocols:
+    dir: "{{.HYPR_DIR}}"
+    vars:
+      VERSION: 0.7.0
+    cmds:
+      - sudo apt-get install -y meson
+      - wget https://github.com/hyprwm/{{.TASK}}/archive/refs/tags/v{{.VERSION}}.tar.gz
+      - tar -xvzf v{{.VERSION}}.tar.gz
+      - |
+        cd {{.TASK}}-{{.VERSION}}
+        meson setup build --prefix=$PREFIX
+        sudo meson install -C build
+    status:
+      - test -d $PREFIX/share/hyprland-protocols
+
+  xdg-desktop-portal-hyprland:
+    dir: "{{.HYPR_DIR}}"
+    deps:
+      [
+        gcc,
+        hyprutils,
+        hyprgraphics,
+        hyprlang,
+        hyprwayland-scanner,
+        pipewire,
+        qt6,
+        wayland,
+        wayland-protocols,
+        hyprland-protocols,
+      ]
+    vars:
+      VERSION: 1.3.11
+
+    cmds:
+      - sudo apt-get install -y libinih-dev libsdbus-c++-dev uuid-dev xdg-desktop-portal-dev libdouble-conversion3 libb2-1 libmd4c0
+      - git clone --recursive https://github.com/hyprwm/{{.TASK}}.git -b v{{.VERSION}}
+      - |
+        cd {{.TASK}}
+        $CMAKE -DCMAKE_INSTALL_LIBEXECDIR=$PREFIX/lib -DCMAKE_INSTALL_PREFIX=$PREFIX -B build
+        $CMAKE --build build --parallel
+        sudo $CMAKE --install build
+    status:
+      - test -f $PREFIX/lib/xdg-desktop-portal-hyprland
+
+  hyprtoolkit:
+    dir: "{{.HYPR_DIR}}"
+    deps: [hyprlang, hyprgraphics, hyprutils, aquamarine]
+    vars:
+      VERSION: "0.3.0"
+    cmds:
+      - sudo apt-get install -y libiniparser-dev libgtest-dev
+      - wget https://github.com/hyprwm/{{.TASK}}/archive/refs/tags/v{{.VERSION}}.tar.gz
+      - tar -xvzf v{{.VERSION}}.tar.gz
+      - |
+        cd {{.TASK}}-{{.VERSION}}
+        $CMAKE --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX:PATH=$PREFIX -S . -B ./build
+        $CMAKE --build ./build --config Release --target all --parallel
+        sudo $CMAKE --install build
+    status:
+      - test -f $PREFIX/lib/libhyprtoolkit.so
+
+  hyprland-guiutils:
+    dir: "{{.HYPR_DIR}}"
+    deps: [hyprlang, hyprtoolkit, hyprutils, cmake-latest]
+    vars:
+      VERSION: "0.1.0"
+    cmds:
+      - sudo apt-get install -y
+      - wget https://github.com/hyprwm/{{.TASK}}/archive/refs/tags/v{{.VERSION}}.tar.gz
+      - tar -xvzf v{{.VERSION}}.tar.gz
+      - |
+        cd {{.TASK}}-{{.VERSION}}
+        $CMAKE --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX:PATH=$PREFIX -S . -B ./build
+        $CMAKE --build ./build --config Release --target all --parallel
+        sudo $CMAKE --install build
+    status:
+      - test -f $PREFIX/bin/hyprland-dialog
