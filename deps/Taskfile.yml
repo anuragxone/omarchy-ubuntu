@@ -134,7 +134,7 @@ tasks:
       - docker cp {{.TASK}}:/home/ubuntu/uwsm_{{.VERSION}}-1~local0_all.deb ./{{.TASK}}/
       - docker cp {{.TASK}}:/home/ubuntu/uwsm-{{.VERSION}}/uwsm-build-deps_{{.VERSION}}-1~local0_all.deb ./{{.TASK}}/
       - sudo apt-get install -y ./{{.TASK}}/*.deb
-  
+
   xdg-desktop-portal:
     deps: [noble-sudo]
     dir: "{{.DIR}}"
@@ -146,3 +146,15 @@ tasks:
       - sudo docker cp {{.TASK}}:$PREFIX/. $PREFIX
     status:
       - test -f $PREFIX/libexec/{{.TASK}}
+
+  gtk4-layer-shell:
+    deps: [noble-sudo]
+    dir: "{{.DIR}}"
+    vars:
+      VERSION: 1.20.3
+    cmds:
+      - docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
+      - docker create --name {{.TASK}} {{.TASK}}
+      - sudo docker cp {{.TASK}}:$PREFIX/. $PREFIX
+    status:
+      - test -f $PREFIX/lib/x86_64-linux-gnu/libgtk4-layer-shell.so
