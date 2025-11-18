@@ -1,0 +1,27 @@
+FROM gtk4-layer-shell
+
+ARG HOME_DIR=/home/ubuntu
+
+ARG VERSION=dev
+
+RUN <<EOF
+    # install gt4-layer-shell's deps
+    sudo apt-get update
+    sudo apt-get install -y git meson cmake curl libpoppler-glib-dev libgtk-4-dev protobuf-compiler libcairo2-dev
+EOF
+
+WORKDIR ${HOME_DIR}
+
+RUN <<EOF
+    set -e
+    git clone https://github.com/abenz1267/walker.git -b ${VERSION}
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+EOF
+
+WORKDIR ${HOME_DIR}/walker
+
+RUN <<EOF
+    . "$HOME/.cargo/env"
+    cargo build --release
+    sudo cp ./target/release/walker /usr/local/bin/
+EOF

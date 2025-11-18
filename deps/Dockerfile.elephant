@@ -1,0 +1,30 @@
+FROM noble-sudo
+
+ARG HOME_DIR=/home/ubuntu
+
+ARG VERSION=2.15.0
+
+RUN <<EOF
+    # install elephant's deps
+    sudo apt-get update
+    sudo apt-get install -y git
+EOF
+
+RUN <<EOF
+    set -e
+    git clone https://github.com/abenz1267/elephant.git -b v${VERSION}
+    wget https://go.dev/dl/go1.25.4.linux-amd64.tar.gz
+    mkdir -p ~/.local
+    tar -C ~/.local -xzf go1.25.4.linux-amd64.tar.gz
+EOF
+
+WORKDIR ${HOME_DIR}/elephant
+
+RUN <<EOF
+    export PATH=$PATH:~/.local/go/bin
+    go mod download
+    go build -o elephant cmd/elephant/elephant.go
+    
+    cd internal/providers/desktopapplications
+    go build -buildmode=plugin
+EOF

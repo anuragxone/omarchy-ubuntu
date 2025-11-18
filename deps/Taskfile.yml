@@ -158,3 +158,29 @@ tasks:
       - sudo docker cp {{.TASK}}:$PREFIX/. $PREFIX
     status:
       - test -f $PREFIX/lib/x86_64-linux-gnu/libgtk4-layer-shell.so
+
+  walker:
+    deps: [gtk4-layer-shell]
+    dir: "{{.DIR}}"
+    vars:
+      VERSION: dev
+    cmds:
+      - docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
+      - docker create --name {{.TASK}} {{.TASK}}
+      - sudo docker cp {{.TASK}}:$PREFIX/. $PREFIX
+    status:
+      - test -f $PREFIX/bin/walker
+  
+  elephant:
+    deps: [noble-sudo]
+    dir: "{{.DIR}}"
+    vars:
+      WORKDIR: "/home/ubuntu/elephant"
+    cmds:
+      - docker build -t {{.TASK}} -f Dockerfile.{{.TASK}} .
+      - docker create --name {{.TASK}} {{.TASK}}
+      - sudo docker cp {{.TASK}}:{{.WORKDIR}}/elephant $PREFIX/bin/
+      - mkdir -p ~/.config/elephant/providers
+      - docker cp {{.TASK}}:{{.WORKDIR}}/internal/providers/desktopapplications/desktopapplications.so ~/.config/elephant/providers/desktopapplications.so
+    status:
+      - test -f $PREFIX/bin/elephant
